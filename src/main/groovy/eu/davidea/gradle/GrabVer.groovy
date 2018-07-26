@@ -88,9 +88,13 @@ class GrabVer implements Plugin<Project> {
         }
 
         project.gradle.taskGraph.afterTask { Task task, TaskState state ->
-            if (task.project.name == project.name &&
-                    ((versioning.hasDependingTask() && task.name == versioning.dependsOn) ||
-                            (!versioning.hasDependingTask() && (task.name == "compileJava" || task.name == "assembleDebug" || task.name == "assembleRelease")))) {
+            def dependables
+            if (versioning.hasDependingTask()) {
+                versioning.dependsOn.split(",")
+            } else {
+                dependables = ["compileJava", "assembleDebug", "assembleRelease"]
+            }
+            if (task.project.name == project.name && dependables.contains(task.name)) {
                 if (state.failure) {
                     println("ERROR - " + project.name + ":" + task.name + " TaskState failed")
                 } else {
